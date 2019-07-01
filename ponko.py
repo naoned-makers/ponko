@@ -12,17 +12,47 @@ import random
 import pygame
 from glob import glob
 
+# CONFIGURATION SERVO HAT & MOTORS
+
+kit = ServoKit(channels=8)
+
 # ACTIONS
-def Head_Slowly(sleep = 0.02):
-  for i in range(90):
-    kit.servo[1].angle = 90 - i
-    time.sleep(sleep)
-  for i in range(180):
-    kit.servo[1].angle = i
-    time.sleep(sleep)
-  for i in range(90):
-    kit.servo[1].angle = 180 - i
-    time.sleep(sleep)
+
+# Head long movement
+
+head_long_left = 180 # Max left value
+head_long_middle = 90 # Middle value
+head_long_right= 0 # Max right value
+
+def head_long(sleep = 0.01):
+  while pygame.mixer.get_busy() > 0:
+    for i in range(head_long_middle - head_long_right):
+      kit.servo[1].angle = head_long_middle - i
+      time.sleep(sleep)
+    for i in range(head_long_left - head_long_right):
+      kit.servo[1].angle = head_long_right + i
+      time.sleep(sleep)
+    for i in range(head_long_left - head_long_middle):
+      kit.servo[1].angle = head_long_left - i
+      time.sleep(sleep)
+
+# Head short movement
+
+head_short_left = 130
+head_short_middle = 90
+head_short_right= 50
+
+def head_short(sleep = 0.01):
+  while pygame.mixer.get_busy() > 0:
+    for i in range(head_short_middle - head_short_right):
+      kit.servo[1].angle = head_short_middle - i
+      time.sleep(sleep)
+    for i in range(head_short_left - head_short_right):
+      kit.servo[1].angle = head_short_right + i
+      time.sleep(sleep)
+    for i in range(head_short_left - head_short_middle):
+      kit.servo[1].angle = head_short_left - i
+      time.sleep(sleep)
 
 # Sounds
 
@@ -31,72 +61,37 @@ pygame.init()
 #pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.mixer.init()
 
-
 def Play_Random_Sound(): # Play random sound from the .OGG files in the directory
   pygame.mixer.stop()
   pygame.mixer.init()
   pygame.mixer.Sound(random.choice(filenames)).play()
 
-"""
-def Play_Sound_1():
-  pygame.mixer.stop()
-  pygame.mixer.init()
-  pygame.mixer.Sound("sounds/sound12.ogg").play()
-  
-def Play_Sound_2():
-  pygame.mixer.stop()
-  pygame.mixer.init()
-  pygame.mixer.Sound("sound_2.ogg").play()
-
-def Play_Sound_3():
-  pygame.mixer.stop()
-  pygame.mixer.init()
-  pygame.mixer.Sound("sound_3.ogg").play()
-
-def Play_Sound_4():
-  pygame.mixer.stop()
-  pygame.mixer.init()
-  pygame.mixer.Sound("sound_4.ogg").play()
-
-def Play_Sound_5():
-  pygame.mixer.stop()
-  pygame.mixer.init()
-  pygame.mixer.Sound("sound_5.ogg").play()
-"""
+# Buttons
 
 def button_callback_1(channel):
   print("Button 1 appuyé !")
-  #Play_Sound_1()
-  #Head_Slowly()
   Play_Random_Sound()
+  head_short()
   
 def button_callback_2(channel):
   print("Button 2 appuyé !")
-  #Play_Sound_2()
-  #Head_Slowly()
   Play_Random_Sound()
+  head_short()
   
 def button_callback_3(channel):
   print("Button 3 appuyé !")
-  #Play_Sound_3()
-  #Head_Slowly()
   Play_Random_Sound()
+  head_short()
   
 def button_callback_4(channel):
   print("Button 4 appuyé !")
-  #Play_Sound_4()
-  #Head_Slowly()
   Play_Random_Sound()
+  head_long()
   
 def button_callback_5(channel):
   print("Button 5 appuyé !")
-  #Play_Sound_5()
-  #Head_Slowly()
   Play_Random_Sound()
-  
-# CONFIGURATION SERVO HAT
-
-kit = ServoKit(channels=8)
+  head_long()
   
 # CONFIGURATION BUTTONS & GPIO
 
