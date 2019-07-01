@@ -1,2 +1,2 @@
 # ponko
-Python code for 5 push buttons on Raspberry Pi
+Python code for Raspberry to interact with Ponko : x10 Lego minifigure 3D printed
