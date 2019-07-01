@@ -1,4 +1,5 @@
 # Ponko by Naoned Makers
+# naoned-makers.github.io
 # Now let's play guitar!
 # Juin 2019
 
@@ -36,11 +37,6 @@ def Play_Random_Sound(): # Play random sound from the .OGG files in the director
   pygame.mixer.init()
   pygame.mixer.Sound(random.choice(filenames)).play()
 
-"""
-files = os.listdir(soundpath)
-for name in files:
-    print(name)
-"""
 """
 def Play_Sound_1():
   pygame.mixer.stop()
