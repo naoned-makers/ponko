@@ -18,7 +18,22 @@ kit = ServoKit(channels=8)
 
 # ACTIONS
 
-# Head long movement
+# Arm movement - Channel 2
+
+arm_bottom = 150 # Max bottom value
+#arm_middle = 90 # Middle value not used
+arm_top = 90 # Max top value
+
+def arm(sleep = 0.1):
+  while pygame.mixer.get_busy() > 0:
+    for i in range(140):
+      kit.servo[2].angle = 150 - i
+      time.sleep(sleep)
+    for i in range(140):
+      kit.servo[2].angle = 10 + i
+      time.sleep(sleep)
+
+# Head long movement - Channel 1
 
 head_long_left = 180 # Max left value
 head_long_middle = 90 # Middle value
@@ -72,6 +87,7 @@ def button_callback_1(channel):
   print("Button 1 appuyé !")
   Play_Random_Sound()
   head_short()
+  arm()
   
 def button_callback_2(channel):
   print("Button 2 appuyé !")
