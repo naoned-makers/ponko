@@ -114,7 +114,7 @@ GPIO.add_event_detect(BUTTON_1, GPIO.RISING, callback=button_callback_1, bouncet
 
 # Button_2 - YELLOW wire
 
-BUTTON_2 = 27 # GPIO27 = N°13
+BUTTON_2 = 13 # GPIO13 = N°
 GPIO.setup(BUTTON_2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
 GPIO.add_event_detect(BUTTON_2, GPIO.RISING, callback=button_callback_2, bouncetime=10000) # Setup event
 
