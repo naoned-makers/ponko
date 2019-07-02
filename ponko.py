@@ -11,6 +11,7 @@ import pygame
 from glob import glob
 import getopt
 import sys
+from threading import Thread
 
 ########################################
 ### Parameters / Constantes
@@ -31,11 +32,29 @@ HEAD_SHORT_POS_RIGHT = 50 # Max right value
 
 
 FILENAMES = glob('sounds/*.ogg') # Where are sounds to play!
+
+########################################
+### Classes
+########################################
+class MotorRun(Thread):
+
+    """This Thread will run a function with args ."""
+
+    def __init__(self, function_name, *args):
+        Thread.__init__(self)
+        self.function = function_name
+        self.args = args
+
+    def run(self):
+        """Code à exécuter pendant l'exécution du thread."""
+        eval(self.function)(*self.args)
+
 ########################################
 ### Functions
 ########################################
 
 def arm(kit, pygame, sleep = 0.1):
+  print("Moving arm")
 
   '''
     Make the Arm movement
@@ -50,7 +69,7 @@ def arm(kit, pygame, sleep = 0.1):
       time.sleep(sleep)
 
 def head_long(kit, pygame, sleep = 0.01):
-  
+  print("Moving head_long")
   '''
     Make the Head long movement
   '''
@@ -67,6 +86,7 @@ def head_long(kit, pygame, sleep = 0.01):
       time.sleep(sleep)
 
 def head_short(kit, pygame, sleep = 0.01):
+  print("Moving head_short")
 
   '''
     Make the Head short movement
@@ -91,8 +111,18 @@ def play_random_sound(pygame): # Play random sound from the .OGG files in the di
 def button_callback_1(kit,pygame):
   print("Button 1 appuyé !")
   play_random_sound(pygame)
-  head_short(kit, pygame)
-  arm(kit, pygame)
+
+  #Thread creation
+  thread_1 = MotorRun("head_short",kit,pygame)
+  thread_2 = MotorRun("arm",kit,pygame)
+
+  # Launch Threads
+  thread_1.start()
+  thread_2.start()
+
+  # Wait for thread ending
+  thread_1.join()
+  thread_2.join()
   
 def button_callback_2(kit,pygame):
   print("Button 2 appuyé !")
