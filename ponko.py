@@ -5,150 +5,221 @@
 
 # LIBS
 
-import RPi.GPIO as GPIO
-from adafruit_servokit import ServoKit
 import time
 import random
 import pygame
 from glob import glob
+import getopt
+import sys
 
-# CONFIGURATION SERVO HAT & MOTORS
+########################################
+### Parameters / Constantes
+########################################
+ARM_CHANNEL = 2
+ARM_POS_MAX_BOTTOM = 150 # Max bottom value
+ARM_POS_MAX_TOP = 10 # Max top value
 
-kit = ServoKit(channels=8)
+HEAD_CHANNEL = 1 
 
-# ACTIONS
+HEAD_LONG_POS_LEFT = 180 # Max left value
+HEAD_LONG_POS_MIDDLE = 90 # Middle value
+HEAD_LONG_POS_RIGHT = 0 # Max right value
 
-# Arm movement - Channel 2
+HEAD_SHORT_POS_LEFT = 130 # Max left value
+HEAD_SHORT_POS_MIDDLE = 90 # Middle value
+HEAD_SHORT_POS_RIGHT = 50 # Max right value
 
-arm_bottom = 150 # Max bottom value
-#arm_middle = 90 # Middle value not used
-arm_top = 90 # Max top value
 
-def arm(sleep = 0.1):
+FILENAMES = glob('sounds/*.ogg') # Where are sounds to play!
+########################################
+### Functions
+########################################
+
+def arm(kit, pygame, sleep = 0.1):
+
+  '''
+    Make the Arm movement
+  '''
+
   while pygame.mixer.get_busy() > 0:
     for i in range(140):
-      kit.servo[2].angle = 150 - i
+      kit.servo[ARM_CHANNEL].angle = ARM_POS_MAX_BOTTOM - i
       time.sleep(sleep)
     for i in range(140):
-      kit.servo[2].angle = 10 + i
+      kit.servo[ARM_CHANNEL].angle = ARM_POS_MAX_TOP + i
       time.sleep(sleep)
 
-# Head long movement - Channel 1
+def head_long(kit, pygame, sleep = 0.01):
+  
+  '''
+    Make the Head long movement
+  '''
 
-head_long_left = 180 # Max left value
-head_long_middle = 90 # Middle value
-head_long_right= 0 # Max right value
-
-def head_long(sleep = 0.01):
   while pygame.mixer.get_busy() > 0:
-    for i in range(head_long_middle - head_long_right):
-      kit.servo[1].angle = head_long_middle - i
+    for i in range(HEAD_LONG_POS_MIDDLE - HEAD_LONG_POS_RIGHT):
+      kit.servo[HEAD_CHANNEL].angle = HEAD_LONG_POS_MIDDLE - i
       time.sleep(sleep)
-    for i in range(head_long_left - head_long_right):
-      kit.servo[1].angle = head_long_right + i
+    for i in range(HEAD_LONG_POS_LEFT - HEAD_LONG_POS_RIGHT):
+      kit.servo[HEAD_CHANNEL].angle = HEAD_LONG_POS_RIGHT + i
       time.sleep(sleep)
-    for i in range(head_long_left - head_long_middle):
-      kit.servo[1].angle = head_long_left - i
+    for i in range(HEAD_LONG_POS_LEFT - HEAD_LONG_POS_MIDDLE):
+      kit.servo[1].angle = HEAD_LONG_POS_LEFT - i
       time.sleep(sleep)
 
-# Head short movement
+def head_short(kit, pygame, sleep = 0.01):
 
-head_short_left = 130
-head_short_middle = 90
-head_short_right= 50
+  '''
+    Make the Head short movement
+  '''
 
-def head_short(sleep = 0.01):
   while pygame.mixer.get_busy() > 0:
-    for i in range(head_short_middle - head_short_right):
-      kit.servo[1].angle = head_short_middle - i
+    for i in range(HEAD_SHORT_POS_MIDDLE - HEAD_SHORT_POS_RIGHT):
+      kit.servo[HEAD_CHANNEL].angle = HEAD_SHORT_POS_MIDDLE - i
       time.sleep(sleep)
-    for i in range(head_short_left - head_short_right):
-      kit.servo[1].angle = head_short_right + i
+    for i in range(HEAD_SHORT_POS_LEFT - HEAD_SHORT_POS_RIGHT):
+      kit.servo[HEAD_CHANNEL].angle = HEAD_SHORT_POS_RIGHT + i
       time.sleep(sleep)
-    for i in range(head_short_left - head_short_middle):
-      kit.servo[1].angle = head_short_left - i
+    for i in range(HEAD_SHORT_POS_LEFT - HEAD_SHORT_POS_MIDDLE):
+      kit.servo[HEAD_CHANNEL].angle = HEAD_SHORT_POS_LEFT - i
       time.sleep(sleep)
 
-# Sounds
-
-filenames = glob('sounds/*.ogg') # Where are sounds to play!
-pygame.init()
-#pygame.mixer.pre_init(44100, 16, 2, 4096)
-pygame.mixer.init()
-
-def Play_Random_Sound(): # Play random sound from the .OGG files in the directory
+def play_random_sound(pygame): # Play random sound from the .OGG files in the directory
   pygame.mixer.stop()
   pygame.mixer.init()
-  pygame.mixer.Sound(random.choice(filenames)).play()
+  pygame.mixer.Sound(random.choice(FILENAMES)).play()
 
-# Buttons
-
-def button_callback_1(channel):
+def button_callback_1(kit,pygame):
   print("Button 1 appuyé !")
-  Play_Random_Sound()
-  head_short()
-  arm()
+  play_random_sound(pygame)
+  head_short(kit, pygame)
+  arm(kit, pygame)
   
-def button_callback_2(channel):
+def button_callback_2(kit,pygame):
   print("Button 2 appuyé !")
-  Play_Random_Sound()
-  head_short()
+  play_random_sound(pygame)
+  head_short(kit, pygame)
   
-def button_callback_3(channel):
+def button_callback_3(kit,pygame):
   print("Button 3 appuyé !")
-  Play_Random_Sound()
-  head_short()
+  play_random_sound(pygame)
+  head_short(kit, pygame)
   
-def button_callback_4(channel):
+def button_callback_4(kit,pygame):
   print("Button 4 appuyé !")
-  Play_Random_Sound()
-  head_long()
+  play_random_sound(pygame)
+  head_long(kit, pygame)
   
-def button_callback_5(channel):
+def button_callback_5(kit,pygame):
   print("Button 5 appuyé !")
-  Play_Random_Sound()
-  head_long()
-  
-# CONFIGURATION BUTTONS & GPIO
+  play_random_sound(pygame)
+  head_long(kit, pygame)
 
-GPIO.setwarnings(False) # Ignore warning for now
-#GPIO.setmode(GPIO.BOARD) # Warning! Use physical pin numbering
-GPIO.setmode(GPIO.BCM) # Use GPIO pin numbering
+def parse_args(argv):
+    
+  #Default parameters value
+  dev_mode = False
 
-# Button 1 - WHITE wire
+  try:
+      opts, args = getopt.getopt(argv,":d",[])
+  except getopt.GetoptError:
+      print ('ponko.py -d')
+      sys.exit(2)
 
-#BUTTON_1 = 11 # N°11 = GPIO17
-BUTTON_1 = 17 # GPIO17 = N°11
+  for opt, arg in opts:
+    if opt in ("-d", "--dev"):
+      dev_mode = True
+   
+  return dev_mode
 
-GPIO.setup(BUTTON_1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
-GPIO.add_event_detect(BUTTON_1, GPIO.RISING, callback=button_callback_1, bouncetime=10000) # Setup event
+########################################
+### Main code
+########################################
 
-# Button_2 - YELLOW wire
+def main(argv):
 
-BUTTON_2 = 13 # GPIO13 = N°
-GPIO.setup(BUTTON_2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
-GPIO.add_event_detect(BUTTON_2, GPIO.RISING, callback=button_callback_2, bouncetime=10000) # Setup event
+  # Args parsing
+  dev_mode = parse_args(argv)
 
-# Button_3 - BLUE wire
+  if(dev_mode):
+    print("dev mode activated !")
+    try:
+      import importlib.util
+      importlib.util.find_spec('RPi.GPIO')
+      import RPi.GPIO as GPIO
+    except ImportError:
+      """
+      import FakeRPi.GPIO as GPIO
+      OR
+      import FakeRPi.RPiO as RPiO
+      """
+    
+      import FakeRPi.GPIO as GPIO
 
-BUTTON_3 = 22 # GPIO22 = N°15
-GPIO.setup(BUTTON_3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
-GPIO.add_event_detect(BUTTON_3, GPIO.RISING, callback=button_callback_3, bouncetime=10000) # Setup event
+    from unittest.mock import MagicMock
+    kit = MagicMock()
+  else:
+    from adafruit_servokit import ServoKit
 
-# Button_4 - PURPLE wire
+    kit = ServoKit(channels=8)
 
-BUTTON_4 = 25 # GPIO25 = N°22
-GPIO.setup(BUTTON_4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
-GPIO.add_event_detect(BUTTON_4, GPIO.RISING, callback=button_callback_4, bouncetime=10000) # Setup event
+    import RPi.GPIO as GPIO
 
-# Button_5 - GREY wire
+  # Sounds
+  pygame.init()
+  pygame.mixer.init()
 
-BUTTON_5 = 6 # GPIO19 = N°31
-GPIO.setup(BUTTON_5, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
-GPIO.add_event_detect(BUTTON_5, GPIO.RISING, callback=button_callback_5, bouncetime=10000) # Setup event
+  # CONFIGURATION BUTTONS & GPIO
 
-# OTHERS
+  GPIO.setwarnings(False) # Ignore warning for now
+  GPIO.setmode(GPIO.BCM) # Use GPIO pin numbering
 
-message = input("Press enter to quit\n\n") # Run until someone presses enter
+  # Button 1 - WHITE wire
+  BUTTON_1 = 17 # GPIO17 = N°11
+  callback_1 = lambda channel, kit_arg = kit, game_arg = pygame: button_callback_1(kit_arg,game_arg)
+  GPIO.setup(BUTTON_1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
+  GPIO.add_event_detect(BUTTON_1, GPIO.RISING, callback=callback_1, bouncetime=10000) # Setup event
 
-GPIO.cleanup() # Clean up
+  # Button_2 - YELLOW wire
+
+  BUTTON_2 = 13 # GPIO13 = N°
+  callback_2 = lambda channel, kit_arg = kit, game_arg = pygame: button_callback_2(kit_arg,game_arg)
+  GPIO.setup(BUTTON_2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
+  GPIO.add_event_detect(BUTTON_2, GPIO.RISING, callback=callback_2, bouncetime=10000) # Setup event
+
+  # Button_3 - BLUE wire
+  BUTTON_3 = 22 # GPIO22 = N°15
+  callback_3 = lambda channel, kit_arg = kit, game_arg = pygame: button_callback_3(kit_arg,game_arg)
+  GPIO.setup(BUTTON_3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
+  GPIO.add_event_detect(BUTTON_3, GPIO.RISING, callback=callback_3, bouncetime=10000) # Setup event
+
+  # Button_4 - PURPLE wire
+  BUTTON_4 = 25 # GPIO25 = N°22
+  callback_4 = lambda channel, kit_arg = kit, game_arg = pygame: button_callback_4(kit_arg,game_arg)
+  GPIO.setup(BUTTON_4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
+  GPIO.add_event_detect(BUTTON_4, GPIO.RISING, callback=callback_4, bouncetime=10000) # Setup event
+
+  # Button_5 - GREY wire
+  BUTTON_5 = 6 # GPIO19 = N°31
+  callback_5 = lambda channel, kit_arg = kit, game_arg = pygame: button_callback_5(kit_arg,game_arg)
+  GPIO.setup(BUTTON_5, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin to be an input pin and set initial value to be pulled low (off)
+  GPIO.add_event_detect(BUTTON_5, GPIO.RISING, callback=callback_5, bouncetime=10000) # Setup event
+
+  if(dev_mode):
+
+    while True:
+      message = input("Press 1 to 5 and Enter to validate or Just Enter to quit\n\n") # Run until someone presses enter
+      if(not message):
+        break
+
+      #TODO protect against wrong typing
+      callable = "button_callback_"+message
+      eval(callable)(kit,pygame)
+      
+     
+  else:
+    message = input("Press Enter to quit\n\n") # Run until someone presses enter
+
+  GPIO.cleanup() # Clean up
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
