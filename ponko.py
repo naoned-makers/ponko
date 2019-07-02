@@ -16,9 +16,11 @@ from threading import Thread
 ########################################
 ### Parameters / Constantes
 ########################################
+
 ARM_CHANNEL = 2
+
 ARM_POS_MAX_BOTTOM = 150 # Max bottom value
-ARM_POS_MAX_TOP = 10 # Max top value
+ARM_POS_MAX_TOP = 100 # Max top value
 
 HEAD_CHANNEL = 1 
 
@@ -30,12 +32,12 @@ HEAD_SHORT_POS_LEFT = 130 # Max left value
 HEAD_SHORT_POS_MIDDLE = 90 # Middle value
 HEAD_SHORT_POS_RIGHT = 50 # Max right value
 
-
 FILENAMES = glob('sounds/*.ogg') # Where are sounds to play!
 
 ########################################
 ### Classes
 ########################################
+
 class MotorRun(Thread):
 
     """This Thread will run a function with args ."""
@@ -53,27 +55,24 @@ class MotorRun(Thread):
 ### Functions
 ########################################
 
-def arm(kit, pygame, sleep = 0.1):
+def arm(kit, pygame, sleep = 0.025):
   print("Moving arm")
-
   '''
     Make the Arm movement
   '''
-
   while pygame.mixer.get_busy() > 0:
-    for i in range(140):
+    for i in range(ARM_POS_MAX_BOTTOM - ARM_POS_MAX_TOP):
       kit.servo[ARM_CHANNEL].angle = ARM_POS_MAX_BOTTOM - i
       time.sleep(sleep)
-    for i in range(140):
+    for i in range(ARM_POS_MAX_BOTTOM - ARM_POS_MAX_TOP):
       kit.servo[ARM_CHANNEL].angle = ARM_POS_MAX_TOP + i
       time.sleep(sleep)
 
-def head_long(kit, pygame, sleep = 0.01):
+def head_long(kit, pygame, sleep = 0.005):
   print("Moving head_long")
   '''
     Make the Head long movement
   '''
-
   while pygame.mixer.get_busy() > 0:
     for i in range(HEAD_LONG_POS_MIDDLE - HEAD_LONG_POS_RIGHT):
       kit.servo[HEAD_CHANNEL].angle = HEAD_LONG_POS_MIDDLE - i
@@ -87,11 +86,9 @@ def head_long(kit, pygame, sleep = 0.01):
 
 def head_short(kit, pygame, sleep = 0.01):
   print("Moving head_short")
-
   '''
     Make the Head short movement
   '''
-
   while pygame.mixer.get_busy() > 0:
     for i in range(HEAD_SHORT_POS_MIDDLE - HEAD_SHORT_POS_RIGHT):
       kit.servo[HEAD_CHANNEL].angle = HEAD_SHORT_POS_MIDDLE - i
@@ -127,22 +124,66 @@ def button_callback_1(kit,pygame):
 def button_callback_2(kit,pygame):
   print("Button 2 appuyé !")
   play_random_sound(pygame)
-  head_short(kit, pygame)
+
+  #Thread creation
+  thread_1 = MotorRun("head_short",kit,pygame)
+  thread_2 = MotorRun("arm",kit,pygame)
+
+  # Launch Threads
+  thread_1.start()
+  thread_2.start()
+
+  # Wait for thread ending
+  thread_1.join()
+  thread_2.join()
   
 def button_callback_3(kit,pygame):
   print("Button 3 appuyé !")
   play_random_sound(pygame)
-  head_short(kit, pygame)
+
+  #Thread creation
+  thread_1 = MotorRun("head_short",kit,pygame)
+  thread_2 = MotorRun("arm",kit,pygame)
+
+  # Launch Threads
+  thread_1.start()
+  thread_2.start()
+
+  # Wait for thread ending
+  thread_1.join()
+  thread_2.join()
   
 def button_callback_4(kit,pygame):
   print("Button 4 appuyé !")
   play_random_sound(pygame)
-  head_long(kit, pygame)
+
+  #Thread creation
+  thread_1 = MotorRun("head_long",kit,pygame)
+  thread_2 = MotorRun("arm",kit,pygame)
+
+  # Launch Threads
+  thread_1.start()
+  thread_2.start()
+
+  # Wait for thread ending
+  thread_1.join()
+  thread_2.join()
   
 def button_callback_5(kit,pygame):
   print("Button 5 appuyé !")
   play_random_sound(pygame)
-  head_long(kit, pygame)
+
+  #Thread creation
+  thread_1 = MotorRun("head_long",kit,pygame)
+  thread_2 = MotorRun("arm",kit,pygame)
+
+  # Launch Threads
+  thread_1.start()
+  thread_2.start()
+
+  # Wait for thread ending
+  thread_1.join()
+  thread_2.join()
 
 def parse_args(argv):
     
