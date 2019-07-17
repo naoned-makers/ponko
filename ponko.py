@@ -106,6 +106,7 @@ def play_random_sound(pygame): # Play random sound from the .OGG files in the di
   pygame.mixer.Sound(random.choice(FILENAMES)).play()
 
 def Play_GOT():
+  pygame.mixer.stop()
   pygame.mixer.init()
   pygame.mixer.Sound("sounds/GOT.ogg").play()
 
