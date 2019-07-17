@@ -105,7 +105,7 @@ def play_random_sound(pygame): # Play random sound from the .OGG files in the di
   pygame.mixer.init()
   pygame.mixer.Sound(random.choice(FILENAMES)).play()
 
-def Play_GOT():
+def Play_GOT(pygame): # Play GOT theme!
   pygame.mixer.stop()
   pygame.mixer.init()
   pygame.mixer.Sound("sounds/GOT.ogg").play()
@@ -176,7 +176,8 @@ def button_callback_4(kit,pygame):
   
 def button_callback_5(kit,pygame):
   print("Button 5 appuyé !")
-  play_random_sound(pygame)
+  #play_random_sound(pygame)
+  Play_GOT(pygame)
 
   #Thread creation
   thread_1 = MotorRun("head_long",kit,pygame)
